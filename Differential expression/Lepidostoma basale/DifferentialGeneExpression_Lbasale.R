@@ -231,7 +231,7 @@ res_hclust_sub$conc <- conc[row.names(res_hclust_sub), 'log2FoldChange']
 res_hclust_sub$conc_under_bi <- conc_under_bi[row.names(res_hclust_sub), 'log2FoldChange'] 
 
 row_dend_all = dendsort(hclust(dist(res_hclust_sub)))
-col_dend_all = dendsort(hclust(dist(t(res_hclust_sub), method = "can"))) #canberra distance
+#col_dend_all = dendsort(hclust(dist(t(res_hclust_sub), method = "can"))) #canberra distance
 
 ##color vector
 f1 = colorRamp2(c(-0.6,-0.15,0,0.15, 0.6), c("#003366",  '#99CCFF', "#FFFFFFFF", '#FF0000',"#990000" ))
