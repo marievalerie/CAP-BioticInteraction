@@ -63,7 +63,6 @@ names(geneList_up) <- unlist(lapply(DE_up$X, function(x)x[1]))
 names(geneList_down) <- unlist(lapply(DE_down$X, function(x)x[1]))
 
 ##Create topGOdata object: downregulated genes
-
 GOdata_down <- new("topGOdata",
                    ontology = "BP",  #ontology criteria = biological process
                    allGenes = geneList_down, #gene universe = all genes which were tested for DE (i.e. used in DESeq)
@@ -82,8 +81,8 @@ write.csv(down, file = 'BP_enrichment_weight01_fisher_insecticide_downregulated.
 ##upregulated genes
 GOdata_up <- new("topGOdata",
                  ontology = "BP",  #ontology criteria = biological process
-                 allGenes = geneList_up, #gene universe because all genes are present in the list; here only the ones with read abundance threshold are included because DESeq only worked with them
-                 geneSelectionFun = function(x)(x == 1), ##function allows to use the genes which are de for treatment
+                 allGenes = geneList_up, #gene universe = all genes which were tested for DE (i.e. used in DESeq)
+                 geneSelectionFun = function(x)(x == 1), 
                  annot = annFUN.gene2GO, gene2GO = gene2GO) #gene ID-to-GO terms
 
 resultFisher.weight.up <- runTest(GOdata_up, algorithm = "weight01", statistic = "fisher")
