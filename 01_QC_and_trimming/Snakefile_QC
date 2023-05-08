@@ -1,0 +1,194 @@
+#Snakefile
+configfile: "config.yaml"
+rule all:
+    input:
+        #QC for raw data
+        expand("../lepidostoma/QC/{lep}_1_fastqc.zip", lep=config["lepidostoma"]),
+        expand("../ephemera/QC/{eph}_1_fastqc.zip", eph=config["ephemera"]),
+        expand("../gammarus/QC/{gam}_1_fastqc.zip", gam=config["gammarus"]),
+        #QC for finally trimmed data
+        expand("../lepidostoma/QC/{lep}_1_polyx_trimmed_val_1_fastqc.zip", lep=config["lepidostoma"]),
+        expand("../ephemera/QC/{eph}_1_polyx_trimmed_val_1_fastqc.zip", eph=config["ephemera"]),
+        expand("../gammarus/QC/{gam}_1_polyx_trimmed_val_1_fastqc.zip", gam=config["gammarus"])
+
+rule fastqc_raw_lep:
+    input:
+        expand("../lepidostoma/raw_data/{lep}_1.fq.gz", lep=config["lepidostoma"]),
+        expand("../lepidostoma/raw_data/{lep}_2.fq.gz", lep=config["lepidostoma"])
+    output:
+        expand("../lepidostoma/QC/{lep}_1_fastqc.zip", lep=config["lepidostoma"]), ##QC must exist bc fastqc will not create it
+        expand("../lepidostoma/QC/{lep}_2_fastqc.zip", lep=config["lepidostoma"])
+    threads:
+        10
+    shell:
+        "fastqc --noextract -q -t {threads} -o ../lepidostoma/QC/ {input}"
+
+rule fastqc_raw_eph:
+    input:
+        expand("../ephemera/raw_data/{eph}_1.fq.gz", eph=config["ephemera"]),
+        expand("../ephemera/raw_data/{eph}_2.fq.gz", eph=config["ephemera"])
+    output:
+        expand("../ephemera/QC/{eph}_1_fastqc.zip", eph=config["ephemera"]), ##QC must exist bc fastqc will not create it
+        expand("../ephemera/QC/{eph}_2_fastqc.zip", eph=config["ephemera"])
+    threads:
+        10
+    shell:
+        "fastqc --noextract -q -t {threads} -o ../ephemera/QC/ {input}"
+
+rule fastqc_raw_gam:
+    input:
+        expand("../gammarus/raw_data/{gam}_1.fq.gz", gam=config["gammarus"]),
+        expand("../gammarus/raw_data/{gam}_2.fq.gz", gam=config["gammarus"])
+    output:
+        expand("../gammarus/QC/{gam}_1_fastqc.zip", gam=config["gammarus"]), ##QC must exist bc fastqc will not create it
+        expand("../gammarus/QC/{gam}_2_fastqc.zip", gam=config["gammarus"])
+    threads:
+        10
+    shell:
+        "fastqc --noextract -q -t {threads} -o ../gammarus/QC/ {input}"
+
+rule unzip_lep:
+    input:
+        "../lepidostoma/raw_data/{lep}_1.fq.gz",
+        "../lepidostoma/raw_data/{lep}_2.fq.gz"
+    output:
+        temp("../lepidostoma/raw_data/{lep}_1.fq"),
+        temp("../lepidostoma/raw_data/{lep}_2.fq")
+    shell:
+        "gunzip {input} "
+
+rule unzip_eph:
+    input:
+        "../ephemera/raw_data/{eph}_1.fq.gz",
+        "../ephemera/raw_data/{eph}_2.fq.gz"
+    output:
+        temp("../ephemera/raw_data/{eph}_1.fq"),
+        temp("../ephemera/raw_data/{eph}_2.fq")
+    shell:
+        "gunzip {input}"
+
+rule unzip_gam:
+    input:
+        "../gammarus/raw_data/{gam}_1.fq.gz",
+        "../gammarus/raw_data/{gam}_2.fq.gz"
+    output:
+        temp("../gammarus/raw_data/{gam}_1.fq"),
+        temp("../gammarus/raw_data/{gam}_2.fq")
+    shell:
+        "gunzip {input}"
+
+rule trim_poly_X_lep:
+    input:
+        fwd = "../lepidostoma/raw_data/{lep}_1.fq",
+        rev = "../lepidostoma/raw_data/{lep}_2.fq"
+    output:
+        trmd1 = "../lepidostoma/trimmed/{lep}_1_polyx_trimmed.fastq",
+        trmd2 = "../lepidostoma/trimmed/{lep}_2_polyx_trimmed.fastq",
+        single1 = "../lepidostoma/trimmed/{lep}_1_singletons.fastq",
+        single2 = "../lepidostoma/trimmed/{lep}_2_singletons.fastq"
+    shell:
+        "~/bin/fastx-trim-filter-polyX-v0.3-dist/fastx-trim-filter-polyX-v0.3 --remove_mono_repeat_reads 0 --in1 {input.fwd} --in2 {input.rev} --out1 {output.trmd1} --out2 {output.trmd2} --single_out1 {output.single1} --single_out2 {output.single2} --symbol_list 'GCTA' -m 25 -s 20 -t 10"
+
+rule trim_poly_X_eph:
+    input:
+        fwd = "../ephemera/raw_data/{eph}_1.fq",
+        rev = "../ephemera/raw_data/{eph}_2.fq"
+    output:
+        trmd1 = "../ephemera/trimmed/{eph}_1_polyx_trimmed.fastq",
+        trmd2 = "../ephemera/trimmed/{eph}_2_polyx_trimmed.fastq",
+        single1 = "../ephemera/trimmed/{eph}_1_singletons.fastq",
+        single2 = "../ephemera/trimmed/{eph}_2_singletons.fastq"
+    shell:
+        "~/bin/fastx-trim-filter-polyX-v0.3-dist/fastx-trim-filter-polyX-v0.3 --remove_mono_repeat_reads 0 --in1 {input.fwd} --in2 {input.rev} --out1 {output.trmd1} --out2 {output.trmd2} --single_out1 {output.single1} --single_out2 {output.single2} --symbol_list 'GCTA' -m 25 -s 20 -t 10"
+
+rule trim_poly_X_gam:
+    input:
+        fwd = "../gammarus/raw_data/{gam}_1.fq",
+        rev = "../gammarus/raw_data/{gam}_2.fq"
+    output:
+        trmd1 = "../gammarus/trimmed/{gam}_1_polyx_trimmed.fastq",
+        trmd2 = "../gammarus/trimmed/{gam}_2_polyx_trimmed.fastq",
+        single1 = "../gammarus/trimmed/{gam}_1_singletons.fastq",
+        single2 = "../gammarus/trimmed/{gam}_2_singletons.fastq"
+    shell:
+        "~/bin/fastx-trim-filter-polyX-v0.3-dist/fastx-trim-filter-polyX-v0.3 --remove_mono_repeat_reads 0 --in1 {input.fwd} --in2 {input.rev} --out1 {output.trmd1} --out2 {output.trmd2} --single_out1 {output.single1} --single_out2 {output.single2} --symbol_list 'GCTA' -m 25 -s 20 -t 10"
+
+rule TrimGalore_lep:
+    input:
+        "../lepidostoma/trimmed/{lep}_1_polyx_trimmed.fastq",
+        "../lepidostoma/trimmed/{lep}_2_polyx_trimmed.fastq"
+    output:
+        "../lepidostoma/trimmed/{lep}_1_polyx_trimmed_val_1.fq.gz",
+        "../lepidostoma/trimmed/{lep}_2_polyx_trimmed_val_2.fq.gz"
+    threads:
+        8
+   # conda:
+        #"cutadapt.yaml"
+    shell:
+        "perl ~/bin/TrimGalore-0.6.6/trim_galore --paired --quality 20 --phred33 --length 25 -j {threads} --gzip --stringency 1 --output_dir ../lepidostoma/trimmed/ {input}"
+
+rule TrimGalore_eph:
+    input:
+        "../ephemera/trimmed/{eph}_1_polyx_trimmed.fastq",
+        "../ephemera/trimmed/{eph}_2_polyx_trimmed.fastq"
+    output:
+        "../ephemera/trimmed/{eph}_1_polyx_trimmed_val_1.fq.gz",
+        "../ephemera/trimmed/{eph}_2_polyx_trimmed_val_2.fq.gz"
+    threads:
+        8
+   # conda:
+        #"cutadapt.yaml"
+    shell:
+        "perl ~/bin/TrimGalore-0.6.6/trim_galore --paired --quality 20 --phred33 --length 25 -j {threads} --gzip --stringency 1 --output_dir ../ephemera/trimmed/ {input}"
+
+rule TrimGalore_gam:
+    input:
+        "../gammarus/trimmed/{gam}_1_polyx_trimmed.fastq",
+        "../gammarus/trimmed/{gam}_2_polyx_trimmed.fastq"
+    output:
+        "../gammarus/trimmed/{gam}_1_polyx_trimmed_val_1.fq.gz",
+        "../gammarus/trimmed/{gam}_2_polyx_trimmed_val_2.fq.gz"
+    threads:
+        8
+   # conda:
+        #"cutadapt.yaml"
+    shell:
+        "perl ~/bin/TrimGalore-0.6.6/trim_galore --paired --quality 20 --phred33 --length 25 -j {threads} --gzip --stringency 1 --output_dir ../gammarus/trimmed/ {input}"
+
+rule fastqc_cutadapt_lep:
+    input:
+        expand("../lepidostoma/trimmed/{lep}_1_polyx_trimmed_val_1.fq.gz", lep=config["lepidostoma"]),
+        expand("../lepidostoma/trimmed/{lep}_2_polyx_trimmed_val_2.fq.gz", lep=config["lepidostoma"])
+    output:
+        expand("../lepidostoma/QC/{lep}_1_polyx_trimmed_val_1_fastqc.zip", lep=config["lepidostoma"]), 
+        expand("../lepidostoma/QC/{lep}_2_polyx_trimmed_val_2_fastqc.zip", lep=config["lepidostoma"])
+    threads:
+        10
+    shell:
+        "fastqc --noextract -q -t {threads} -o ../lepidostoma/QC/ {input}"
+
+rule fastqc_cutadapt_eph:
+    input:
+        expand("../ephemera/trimmed/{eph}_1_polyx_trimmed_val_1.fq.gz", eph=config["ephemera"]),
+        expand("../ephemera/trimmed/{eph}_2_polyx_trimmed_val_2.fq.gz", eph=config["ephemera"])
+    output:
+        #expand("QC/{sample}_1_rrna_polyx_val_fastqc.zip", sample=config["samples"]), 
+        #expand("QC/{sample}_2_rrna_polyx_val_fastqc.zip", sample=config["samples"])
+        expand("../ephemera/QC/{eph}_1_polyx_trimmed_val_1_fastqc.zip", eph=config["ephemera"]), 
+        expand("../ephemera/QC/{eph}_2_polyx_trimmed_val_2_fastqc.zip", eph=config["ephemera"])
+    threads:
+        10
+    shell:
+        "fastqc --noextract -q -t {threads} -o ../ephemera/QC/ {input}"
+
+rule fastqc_cutadapt_gam:
+    input:
+        expand("../gammarus/trimmed/{gam}_1_polyx_trimmed_val_1.fq.gz", gam=config["gammarus"]),
+        expand("../gammarus/trimmed/{gam}_2_polyx_trimmed_val_2.fq.gz", gam=config["gammarus"])
+    output:
+        expand("../gammarus/QC/{gam}_1_polyx_trimmed_val_1_fastqc.zip", gam=config["gammarus"]), 
+        expand("../gammarus/QC/{gam}_2_polyx_trimmed_val_2_fastqc.zip", gam=config["gammarus"])
+    threads:
+        10
+    shell:
+        "fastqc --noextract -q -t {threads} -o ../gammarus/QC/ {input}"
