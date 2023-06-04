@@ -9,7 +9,7 @@ library(topGO)
 library(ggplot2)
 library(scales)
 
-setwd('Indoor_Genexpression/functional_annotation_eggnog/lepidostoma_trinity')
+setwd('C:/Users/mbras/OneDrive/Desktop/Doktorarbeit/Indoor_Genexpression/functional_annotation_eggnog/lepidostoma_trinity')
 
 ##gene2go must be prepared
 GO_ids = read.csv('Trinity_Gene2GO.csv', sep=';', header = F)
@@ -35,7 +35,7 @@ head(gene2GO) #go IDs as strings
 setwd('C:/Users/mbras/OneDrive/Desktop/Doktorarbeit/Indoor_Genexpression/DESeq/lep_numerical_pred')
 pest <- as.data.frame(read.csv('DEG_lep_indoor_numerical_predictor_SVA_corrected_concentration.csv', header = T, row.names = 1))
 pest_under_bi <- as.data.frame(read.csv('DEG_lep_indoor_numerical_predictor_SVA_corrected_pest_under_bi.csv', header = T, row.names = 1))
-setwd('Indoor_Genexpression/functional_annotation_eggnog/lepidostoma_trinity/enrichment')
+setwd('C:/Users/mbras/OneDrive/Desktop/Doktorarbeit/Indoor_Genexpression/functional_annotation_eggnog/lepidostoma_trinity/enrichment')
 
 ###insecticide effect without biotic interaction###
 
@@ -78,7 +78,7 @@ GOdata_down <- new("topGOdata",
 resultFisher.weight.down <- runTest(GOdata_down, algorithm = "weight01", statistic = "fisher")
 
 ##summarize in table
-down <- GenTable(GOdata_down, weight01 = resultFisher.weight.down, elim = resultFisher.elim.down, topNodes = length(resultFisher.weight.down@score), ranksOf = "elim", orderBy = 'weight01', numChar = 500)
+down <- GenTable(GOdata_down, weight01 = resultFisher.weight.down, topNodes = length(resultFisher.weight.down@score),  orderBy = 'weight01', numChar = 500)
 
 ##export results
 write.csv(down, file = 'BP_enrichment_weight01_fisher_insecticide_downregulated.csv')
@@ -91,7 +91,7 @@ GOdata_up <- new("topGOdata",
                  annot = annFUN.gene2GO, gene2GO = gene2GO) #gene ID-to-GO terms
 
 resultFisher.weight.up <- runTest(GOdata_up, algorithm = "weight01", statistic = "fisher")
-up <- GenTable(GOdata_up, weight01 = resultFisher.weight.up, elim = resultFisher.elim.up, topNodes = length(resultFisher.weight.up@score), ranksOf = "elim", orderBy = 'weight01', numChar = 500)
+up <- GenTable(GOdata_up, weight01 = resultFisher.weight.up,  topNodes = length(resultFisher.weight.up@score),  orderBy = 'weight01', numChar = 500)
 
 ##export results
 write.csv(up, file = 'BP_enrichment_weight01_fisher_insecticide_upregulated.csv')
@@ -230,7 +230,7 @@ GOdata_down <- new("topGOdata",
 resultFisher.weight.down <- runTest(GOdata_down, algorithm = "weight01", statistic = "fisher")
 
 ##summarize in table
-down <- GenTable(GOdata_down, weight01 = resultFisher.weight.down, elim = resultFisher.elim.down, topNodes = length(resultFisher.weight.down@score), ranksOf = "elim", orderBy = 'weight01', numChar = 500)
+down <- GenTable(GOdata_down, weight01 = resultFisher.weight.down, topNodes = length(resultFisher.weight.down@score),  orderBy = 'weight01', numChar = 500)
 
 ##export results
 write.csv(down, file = 'BP_enrichment_weight01_fisher_insecticide_under_bi_downregulated.csv')
@@ -243,7 +243,7 @@ GOdata_up <- new("topGOdata",
                  annot = annFUN.gene2GO, gene2GO = gene2GO) #gene ID-to-GO terms
 
 resultFisher.weight.up <- runTest(GOdata_up, algorithm = "weight01", statistic = "fisher")
-up <- GenTable(GOdata_up, weight01 = resultFisher.weight.up, elim = resultFisher.elim.up, topNodes = length(resultFisher.weight.up@score), ranksOf = "elim", orderBy = 'weight01', numChar = 500)
+up <- GenTable(GOdata_up, weight01 = resultFisher.weight.up, topNodes = length(resultFisher.weight.up@score), orderBy = 'weight01', numChar = 500)
 
 ##export results
 write.csv(up, file = 'BP_enrichment_weight01_fisher_insecticide_under_bi_upregulated.csv')
