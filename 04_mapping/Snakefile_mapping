@@ -1,0 +1,75 @@
+#Snakefile
+configfile: "config.yaml"
+rule all:
+    input:
+        expand("../ephemera/salmon_quant/{eph}", eph=config["ephemera"]),
+        expand("../lepidostoma/salmon_quant/{lep}", lep=config["lepidostoma"]),
+        expand("../gammarus/salmon_quant/{gam}", gam=config["gammarus"])
+        #expand("../ephemera/mapping_RSEM/{eph}.isoforms.results", eph =config["ephemera"]) #final analysis with salmon (leight-weight alignment)
+        
+
+rule read_mapping_salmon_ephemera:
+    input:
+        fwd = "../ephemera/trimmed/{eph}_1_polyx_trimmed_val_1.fq.gz",
+        rev = "../ephemera/trimmed/{eph}_2_polyx_trimmed_val_2.fq.gz"
+    output:
+        directory("../ephemera/salmon_quant/{eph}") 
+    threads:
+        10
+    conda:
+        "salmon_env.yaml" ##salmon does not work properly in snakemake env, due to some dependency struggle
+    shell:
+        "salmon quant -i ../ephemera/trinity_eph_indoor_clstr-98_salmon_idx --libType ISR -1 {input.fwd} -2 {input.rev} --validateMappings -o {output} -p {threads} --seqBias --gcBias" 
+
+rule read_mapping_salmon_lepidostoma:
+    input:
+        fwd = "../lepidostoma/trimmed/{lep}_1_polyx_trimmed_val_1.fq.gz",
+        rev = "../lepidostoma/trimmed/{lep}_2_polyx_trimmed_val_2.fq.gz"
+    output:
+        directory("../lepidostoma/salmon_quant/{lep}") 
+    threads:
+        10
+    conda:
+        "salmon_env.yaml" 
+    shell:
+        "salmon quant -i ../lepidostoma/trinity_lep_indoor_clstr-98_salmon_idx --libType ISR -1 {input.fwd} -2 {input.rev} --validateMappings -o {output} -p {threads} --seqBias --gcBias" 
+
+rule read_mapping_salmon_gammarus:
+    input:
+        fwd = "../gammarus/trimmed/{gam}_1_polyx_trimmed_val_1.fq.gz",
+        rev = "../gammarus/trimmed/{gam}_2_polyx_trimmed_val_2.fq.gz"
+    output:
+        directory("../gammarus/salmon_quant/{gam}") 
+    threads:
+        10
+    conda:
+        "salmon_env.yaml" 
+    shell:
+        "salmon quant -i ../gammarus/spades_gam_indoor_clstr-98_salmon_idx --libType ISR -1 {input.fwd} -2 {input.rev} --validateMappings -o {output} -p {threads} --seqBias --gcBias" 
+
+rule unzip_fwd_eph:
+    input:
+        "../ephemera/trimmed/{eph}_1_polyx_trimmed_val_1.fq.gz"
+    output:
+        temp("../ephemera/trimmed/{eph}_1_polyx_trimmed_val_1.fq")
+    shell:
+        "gunzip -c {input} > {output}"
+
+rule unzip_rev_eph:
+    input:
+        "../ephemera/trimmed/{eph}_2_polyx_trimmed_val_2.fq.gz"
+    output:
+        temp("../ephemera/trimmed/{eph}_2_polyx_trimmed_val_2.fq")
+    shell:
+        "gunzip -c {input} > {output}"
+
+rule read_mapping_RSEM_eph:
+    input:
+        fwd = "../ephemera/trimmed/{eph}_1_polyx_trimmed_val_1.fq",
+        rev = "../ephemera/trimmed/{eph}_2_polyx_trimmed_val_2.fq"
+    output:
+        "../ephemera/mapping_RSEM/{eph}.isoforms.results"
+    threads:
+        10
+    shell:
+        "~/bin/RSEM-1.3.3/rsem-calculate-expression --forward-prob 0 --paired-end {input.fwd} {input.rev} ../ephemera/RSEM_mapping_ref ../ephemera/mapping_RSEM/{wildcards.eph} --no-bam-output --bowtie2 -p {threads}"
